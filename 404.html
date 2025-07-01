@@ -1,44 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
   <title>Lida Green Product Verification</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    html, body {
-      height: 100%; margin: 0; padding: 0;
-      min-height: 100vh;
-    }
     body {
-      width: 100vw; height: 100vh; min-height: 100vh;
-      background: url("greenlida.com_(Pixel 7).png") no-repeat center center fixed;
+      background: url("lidagreen/greenlida-bg.png") no-repeat center center fixed;
       background-size: cover;
+      margin: 0; min-height: 100vh; width: 100vw;
       display: flex; flex-direction: column; justify-content: center; align-items: center;
     }
-    .overlay {
-      position: fixed;
-      inset: 0;
-      width: 100vw; height: 100vh;
-      z-index: 100;
-      background: rgba(0,0,0,0); /* невидим слой, улавя клик */
-      cursor: pointer;
-    }
-    .box {
-      background: rgba(255,255,255,0.90);
-      border-radius: 16px;
-      box-shadow: 0 2px 18px #0004;
-      padding: 32px 18px 24px 18px;
-      max-width: 360px;
-      margin: 60px auto 0 auto;
-      text-align: center;
-      z-index: 200;
-      position: relative;
-    }
-    h1 { font-size: 1.3em; margin: 0 0 16px 0;}
-    #result { font-size: 1.15em; margin-top: 24px;}
-    @media (max-width: 450px) {
-      .box { max-width: 98vw; padding: 16px 2vw 12px 2vw; }
-    }
+    .overlay { position:fixed; inset:0; z-index:1; background:rgba(0,0,0,0); cursor:pointer;}
+    .box { background:rgba(255,255,255,0.95); border-radius:14px; box-shadow:0 2px 24px #0002; padding:32px 16px 22px 16px; max-width:380px; text-align:center; position:relative; z-index:2;}
+    h1 { font-size: 1.3em;}
+    #result { font-size: 1.1em; margin-top:20px;}
+    @media (max-width:440px) { .box{max-width:97vw; padding:16px 2vw;} }
   </style>
 </head>
 <body>
@@ -48,10 +25,12 @@
     <div id="result">Loading...</div>
   </div>
   <script>
-    // Взема 6-цифрен код от URL
-    const code = location.pathname.split("/").pop();
+    // ПАРАМЕТРИЗИРАН ГРАБЕР (работи навсякъде в /qr и /qr/lidagreen)
+    const segments = window.location.pathname.split('/');
+    // Търси 6-цифрен код във всеки сегмент
+    let code = segments.find(s => /^\d{6}$/.test(s)) || "";
     const result = document.getElementById('result');
-    if (/^\d{6}$/.test(code)) {
+    if (code) {
       fetch("https://qr.radilov-k.workers.dev/lidagreen/" + code)
         .then(r => r.json())
         .then(d => {

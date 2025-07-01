@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lida Green Product Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f8f8f8; color: #222; max-width: 380px; margin: 60px auto; border-radius: 14px; box-shadow: 0 2px 24px #0002; padding: 40px 24px;}
+    h1 { font-size: 1.4em; text-align: center; }
+    #result { text-align: center; margin: 30px 0 0 0; font-size: 1.15em; }
+  </style>
+</head>
+<body>
+  <h1>Lida Green Authenticity Check</h1>
+  <div id="result">Loading...</div>
+  <script>
+    // Извлича кода от URL-а: /lidagreen/XXXXXX
+    const code = location.pathname.split("/").pop();
+    const result = document.getElementById('result');
+    if (/^\d{6}$/.test(code)) {
+      fetch("https://qr.radilov-k.workers.dev/lidagreen/" + code)
+        .then(r => r.json())
+        .then(d => {
+          if (d.status === "valid") {
+            result.innerHTML = "✅ This Lida Green product is <b>original</b>.";
+          } else if (d.status === "invalid") {
+            result.innerHTML = "❌ This code is <b>not recognized</b>.<br>Product may be counterfeit.";
+          } else {
+            result.textContent = "Invalid code format.";
+          }
+        })
+        .catch(() => {
+          result.textContent = "Verification error. Try again later.";
+        });
+    } else {
+      result.textContent = "Invalid or missing code in the URL.";
+    }
+  </script>
+</body>
+</html>

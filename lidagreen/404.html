@@ -5,13 +5,10 @@
   <title>Lida Green Product Verification</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    html, body {
-      height: 100%; margin: 0; padding: 0;
-      min-height: 100vh;
-    }
+    html, body { height: 100%; margin: 0; padding: 0; min-height: 100vh; }
     body {
       width: 100vw; height: 100vh; min-height: 100vh;
-      background: url("lidagreen/greenlida.png") no-repeat center center fixed;
+      background: url("greenlida.png") no-repeat center center fixed;
       background-size: cover;
       display: flex; flex-direction: column; justify-content: center; align-items: center;
     }
@@ -20,54 +17,111 @@
       inset: 0;
       width: 100vw; height: 100vh;
       z-index: 100;
-      background: rgba(0,0,0,0); /* невидим слой, улавя клик */
+      background: rgba(0,0,0,0);
       cursor: pointer;
     }
     .box {
-      background: rgba(255,255,255,0.90);
+      background: rgba(255,255,255,0.95);
       border-radius: 16px;
       box-shadow: 0 2px 18px #0004;
-      padding: 32px 18px 24px 18px;
+      padding: 36px 18px 30px 18px;
       max-width: 360px;
       margin: 60px auto 0 auto;
       text-align: center;
       z-index: 200;
       position: relative;
     }
-    h1 { font-size: 1.3em; margin: 0 0 16px 0;}
-    #result { font-size: 1.15em; margin-top: 24px;}
+    .icon-success {
+      display: block;
+      margin: 0 auto 20px auto;
+    }
+    .title-main {
+      font-size: 1.5em;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #24c273;
+      letter-spacing: 0.01em;
+    }
+    .product-name {
+      font-size: 1.1em;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    .serial-num {
+      font-size: 1em;
+      color: #555;
+      letter-spacing: 0.05em;
+    }
     @media (max-width: 450px) {
-      .box { max-width: 98vw; padding: 16px 2vw 12px 2vw; }
+      .box { max-width: 98vw; padding: 18px 2vw 18px 2vw; }
+      .icon-success { width: 60px; height: 60px;}
     }
   </style>
 </head>
 <body>
   <div class="overlay" onclick="window.location.href='https://greenlida.com/'"></div>
   <div class="box">
-    <h1>Lida Green Authenticity Check</h1>
-    <div id="result">Loading...</div>
+    <div id="result">
+      <svg class="icon-success" width="76" height="76" viewBox="0 0 76 76">
+        <circle cx="38" cy="38" r="38" fill="#24c273"/>
+        <polyline points="22,40 35,53 56,27" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="title-main">Original product</div>
+      <div class="product-name">Lida Green 30caps.</div>
+      <div class="serial-num" id="productNo"></div>
+    </div>
   </div>
   <script>
-    // Взема 6-цифрен код от URL
-    const code = location.pathname.split("/").pop();
-    const result = document.getElementById('result');
-    if (/^\d{6}$/.test(code)) {
+    // Извличане на 6-цифрен код от URL (работи навсякъде)
+    const segments = window.location.pathname.split('/');
+    let code = segments.find(s => /^\d{6}$/.test(s)) || "";
+    const productNoDiv = document.getElementById('productNo');
+    const resultDiv = document.getElementById('result');
+
+    // Покажи серийния номер винаги (дори при грешка)
+    let serialSuffix = code ? code.slice(-3) : '???';
+    productNoDiv.textContent = "No. LDG6132" + serialSuffix;
+
+    if (code) {
       fetch("https://qr.radilov-k.workers.dev/lidagreen/" + code)
         .then(r => r.json())
         .then(d => {
           if (d.status === "valid") {
-            result.innerHTML = "✅ This Lida Green product is <b>original</b>.";
+            // Покажи success box (вече е показан по-горе)
           } else if (d.status === "invalid") {
-            result.innerHTML = "❌ This code is <b>not recognized</b>.<br>Product may be counterfeit.";
+            resultDiv.innerHTML = `
+              <svg class="icon-success" width="76" height="76" viewBox="0 0 76 76">
+                <circle cx="38" cy="38" r="38" fill="#ee5555"/>
+                <line x1="24" y1="24" x2="52" y2="52" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+                <line x1="52" y1="24" x2="24" y2="52" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+              </svg>
+              <div class="title-main" style="color:#ee5555;">Code not recognized</div>
+              <div class="product-name">Lida Green 30caps.</div>
+              <div class="serial-num">No. LDG6132${serialSuffix}</div>
+              <div style="color:#b00;font-size:1em;margin-top:8px;">This code is not in our database.<br>Product may be counterfeit.</div>
+            `;
           } else {
-            result.textContent = "Invalid code format.";
+            resultDiv.innerHTML = `
+              <div class="title-main" style="color:#ee5555;">Invalid code format</div>
+              <div class="product-name">Lida Green 30caps.</div>
+              <div class="serial-num">No. LDG6132${serialSuffix}</div>
+            `;
           }
         })
         .catch(() => {
-          result.textContent = "Verification error. Try again later.";
+          resultDiv.innerHTML = `
+            <div class="title-main" style="color:#ee5555;">Verification error</div>
+            <div class="product-name">Lida Green 30caps.</div>
+            <div class="serial-num">No. LDG6132${serialSuffix}</div>
+            <div style="color:#b00;font-size:1em;margin-top:8px;">Unable to connect to the verification server.<br>Please try again later.</div>
+          `;
         });
     } else {
-      result.textContent = "Invalid or missing code in the URL.";
+      resultDiv.innerHTML = `
+        <div class="title-main" style="color:#ee5555;">Invalid or missing code</div>
+        <div class="product-name">Lida Green 30caps.</div>
+        <div class="serial-num">No. LDG6132${serialSuffix}</div>
+      `;
     }
   </script>
 </body>

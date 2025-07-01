@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lida Green Product Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      height: 100%; margin: 0; padding: 0;
+      min-height: 100vh;
+    }
+    body {
+      width: 100vw; height: 100vh; min-height: 100vh;
+      background: url("greenlida.com_(Pixel 7).png") no-repeat center center fixed;
+      background-size: cover;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      width: 100vw; height: 100vh;
+      z-index: 100;
+      background: rgba(0,0,0,0); /* невидим слой, улавя клик */
+      cursor: pointer;
+    }
+    .box {
+      background: rgba(255,255,255,0.90);
+      border-radius: 16px;
+      box-shadow: 0 2px 18px #0004;
+      padding: 32px 18px 24px 18px;
+      max-width: 360px;
+      margin: 60px auto 0 auto;
+      text-align: center;
+      z-index: 200;
+      position: relative;
+    }
+    h1 { font-size: 1.3em; margin: 0 0 16px 0;}
+    #result { font-size: 1.15em; margin-top: 24px;}
+    @media (max-width: 450px) {
+      .box { max-width: 98vw; padding: 16px 2vw 12px 2vw; }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay" onclick="window.location.href='https://greenlida.com/'"></div>
+  <div class="box">
+    <h1>Lida Green Authenticity Check</h1>
+    <div id="result">Loading...</div>
+  </div>
+  <script>
+    // Взема 6-цифрен код от URL
+    const code = location.pathname.split("/").pop();
+    const result = document.getElementById('result');
+    if (/^\d{6}$/.test(code)) {
+      fetch("https://qr.radilov-k.workers.dev/lidagreen/" + code)
+        .then(r => r.json())
+        .then(d => {
+          if (d.status === "valid") {
+            result.innerHTML = "✅ This Lida Green product is <b>original</b>.";
+          } else if (d.status === "invalid") {
+            result.innerHTML = "❌ This code is <b>not recognized</b>.<br>Product may be counterfeit.";
+          } else {
+            result.textContent = "Invalid code format.";
+          }
+        })
+        .catch(() => {
+          result.textContent = "Verification error. Try again later.";
+        });
+    } else {
+      result.textContent = "Invalid or missing code in the URL.";
+    }
+  </script>
+</body>
+</html>
